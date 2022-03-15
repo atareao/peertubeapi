@@ -50,6 +50,43 @@ class PeerTube:
         return {}
 
     def upload(self, channel_id, name, filepath):
+        """
+        Privacy Policies:
+            "1": "Public",
+            "2": "Unlisted",
+            "3": "Private",
+            "4": "Internal"
+        Licenses:
+            "1": "Attribution",
+            "2": "Attribution - Share Alike",
+            "3": "Attribution - No Derivatives",
+            "4": "Attribution - Non Commercial",
+            "5": "Attribution - Non Commercial - Share Alike",
+            "6": "Attribution - Non Commercial - No Derivatives",
+            "7": "Public Domain Dedication"
+        Languages:
+            "es": "Spanish",
+            "en": "English"
+        Categories:
+            "1": "Music",
+            "2": "Films",
+            "3": "Vehicles",
+            "4": "Art",
+            "5": "Sports",
+            "6": "Travels",
+            "7": "Gaming",
+            "8": "People",
+            "9": "Comedy",
+            "10": "Entertainment",
+            "11": "News & Politics",
+            "12": "How To",
+            "13": "Education",
+            "14": "Activism",
+            "15": "Science & Technology",
+            "16": "Animals",
+            "17": "Kids",
+            "18": "Food"
+        """
         base_url = self.conf['credentials']['base_url']
         url = f"{base_url}/videos/upload"
         token_type = self.conf['token']['token_type']
@@ -60,6 +97,7 @@ class PeerTube:
         data = {
                 "channelId": channel_id,
                 "name": name,
+                "category": category
                 }
         filename = os.path.basename(filepath)
         mimetype = mimetypes.guess_type(filepath)
