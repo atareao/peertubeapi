@@ -24,6 +24,9 @@
 import time
 import requests
 import toml
+import mimetypes
+
+mimetypes.init()
 
 
 class PeerTube:
@@ -36,7 +39,6 @@ class PeerTube:
     def get_user_info(self):
         base_url = self.conf['credentials']['base_url']
         url = f"{base_url}/users/me"
-        print(url)
         token_type = self.conf['token']['token_type']
         access_token = self.conf['token']['access_token']
         headers = {
@@ -46,6 +48,26 @@ class PeerTube:
         if response.status_code == 200:
             return response.json()
         return {}
+
+    def upload(self, channel_id, name, filepath):
+        base_url = self.conf['credentials']['base_url']
+        url = f"{base_url}/videos/upload"
+        token_type = self.conf['token']['token_type']
+        access_token = self.conf['token']['access_token']
+        headers = {
+                "Authorization": f"{token_type} {access_token}",
+                }
+        data = {
+                "channelId": channel_id,
+                "name": name,
+                }
+        filename = os.path.basename(filepath)
+        mimetype = mimetypes.guess_type(filepath)
+        with open(filepath, 'rb') as file_reader:
+            files = {"videofile": (filename, file_reader, mimetype)}
+            response = requests.post(url, headers=headers, data=data, files=files)
+            print(response.status_code)
+            print(response.content)
 
 
     def logout(self):
@@ -159,3 +181,7 @@ if __name__ == '__main__':
     pt_path = os.getenv("PT_PATH")
     peerTube = PeerTube(pt_path)
     print(peerTube.get_user_info())
+    channel_id = 19129
+    name = "test"
+    filepath = "cap5.mp4"
+    response = peerTube.upload(channel_id, name, filepath)
