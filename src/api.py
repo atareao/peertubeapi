@@ -51,6 +51,7 @@ class PeerTube:
 
     def upload(self, channel_id, name, filepath):
         """
+        url: https://docs.joinpeertube.org/api-rest-reference.html#operation/uploadLegacy
         Privacy Policies:
             "1": "Public",
             "2": "Unlisted",
