@@ -21,9 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import time
 import requests
 import toml
-import time
 
 
 class PeerTube:
@@ -68,13 +68,13 @@ class PeerTube:
         if self.conf['client']['client_id'] == "" or \
                 self.conf['client']['client_secret'] == "":
             self.__login_prerequisite()
-        ts = int(time.time())
+        timestamp = int(time.time())
         if self.conf['token']['token_type'] == '' or \
                 self.conf['token']['access_token'] == '' or \
                 self.conf['token']['access_token'] == '' or \
-                ts > self.conf['token']['refresh_token_expires_in']:
+                timestamp > self.conf['token']['refresh_token_expires_in']:
             self.__get_access_token()
-        elif ts > self.conf['token']['expires_in']:
+        elif timestamp > self.conf['token']['expires_in']:
             self.__get_refresh_token()
 
     def __read_configuration(self):
@@ -113,9 +113,9 @@ class PeerTube:
         response = requests.post(url, data=data)
         if response.status_code == 200:
             data = response.json()
-            ts = int(time.time())
-            data['expires_in'] += ts
-            data['refresh_token_expires_in'] += ts
+            timestamp = int(time.time())
+            data['expires_in'] += timestamp
+            data['refresh_token_expires_in'] += timestamp
             self.conf['token'] = data
             self.__save_conf()
         else:
@@ -136,9 +136,9 @@ class PeerTube:
         response = requests.post(url, data=data)
         if response.status_code == 200:
             data = response.json()
-            ts = int(time.time())
-            data['expires_in'] += ts
-            data['refresh_token_expires_in'] += ts
+            timestamp = int(time.time())
+            data['expires_in'] += timestamp
+            data['refresh_token_expires_in'] += timestamp
             self.conf['token'] = data
             self.__save_conf()
         else:
@@ -147,8 +147,8 @@ class PeerTube:
             self.__save_conf()
 
     def __save_conf(self):
-        with open(self.path, 'w') as fw:
-            toml.dump(self.conf, fw)
+        with open(self.path, 'w') as file_writer:
+            toml.dump(self.conf, file_writer)
 
 
 
@@ -156,6 +156,6 @@ if __name__ == '__main__':
     import os
     from dotenv import load_dotenv
     load_dotenv()
-    path = os.getenv("PT_PATH")
-    peerTube = PeerTube(path)
+    pt_path = os.getenv("PT_PATH")
+    peerTube = PeerTube(pt_path)
     print(peerTube.get_user_info())
