@@ -21,10 +21,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
 import time
+import mimetypes
 import requests
 import toml
-import mimetypes
 
 mimetypes.init()
 
@@ -49,7 +50,8 @@ class PeerTube:
             return response.json()
         return {}
 
-    def upload(self, channel_id, name, filepath):
+    def upload(self, channel_id, filepath, name, description,
+            privace_policy_id=1, license_id=1, language='es', category_id=15):
         """
         url: https://docs.joinpeertube.org/api-rest-reference.html#operation/uploadLegacy
         Privacy Policies:
@@ -98,7 +100,11 @@ class PeerTube:
         data = {
                 "channelId": channel_id,
                 "name": name,
-                "category": category
+                "description": description,
+                "category": category_id,
+                "language": language,
+                "license": license_id,
+                "privacy": privace_policy_id
                 }
         filename = os.path.basename(filepath)
         mimetype = mimetypes.guess_type(filepath)
@@ -220,7 +226,7 @@ if __name__ == '__main__':
     pt_path = os.getenv("PT_PATH")
     peerTube = PeerTube(pt_path)
     print(peerTube.get_user_info())
-    channel_id = 19129
+    channel_id = os.getenv('PT_CHANNEL_ID')
     name = "test"
     filepath = "cap5.mp4"
-    response = peerTube.upload(channel_id, name, filepath)
+    #response = peerTube.upload(channel_id, name, filepath)

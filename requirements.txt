@@ -1,3 +1,5 @@
 python-dotenv==0.19.2
 requests==2.27.1
 toml==0.10.2
+youtube_dl==2021.12.17
+plumbum==1.7.2
