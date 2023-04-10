@@ -34,6 +34,73 @@ class YT:
     def get_videos_from_playlist(self, playlist_id):
         return self.__get_videos_from_playlist(playlist_id)
 
+    def get_channels(self):
+        url = (f"{URL}/channels?part=snippet"
+               "&forUsername=atareao"
+               f"&key={self.key}")
+        print(url)
+        response = requests.get(url=url)
+        if response.status_code != 200:
+            print(response.status_code)
+            print(response.text)
+            return None
+        data = response.json()
+        print(data)
+
+    def get_video(self, yt_id):
+        url = f"{URL}/videos?part=snippet&id={yt_id}&key={self.key}"
+        print(url)
+        response = requests.get(url=url)
+        if response.status_code != 200:
+            return None
+        data = response.json()
+        if 'items' in data and data['items']:
+            item = data['items'][0]
+            if item['snippet']['title'].lower() == 'private video' or \
+                    item['snippet']['title'].lower() == 'deleted video':
+                return None
+            link = f"{YTURL}/watch?v={yt_id}"
+            return {"title": item['snippet']['title'],
+                    "description": item['snippet']['description'],
+                    "id": yt_id,
+                    "link": link}
+
+    def search_videos(self, channel_id, published_after, next_page_token=None):
+        videos = []
+        url = (f"{URL}/search?part=snippet"
+               f"&channelId={channel_id}"
+               f"&publishedAfter={published_after}"
+               "&order=date"
+               f"&key={self.key}")
+        if next_page_token:
+            url += f"&pageToken={next_page_token}"
+        print(url)
+        response = requests.get(url=url)
+        if response.status_code != 200:
+            print(response.status_code)
+            print(response.text)
+            return videos
+        data = response.json()
+        for item in data['items']:
+            if item['snippet']['title'].lower() == 'private video' or \
+                    item['snippet']['title'].lower() == 'deleted video':
+                continue
+            video_id = item['id']['videoId']
+            link = f"{YTURL}/watch?v={video_id}"
+            video = {
+                    "title": item['snippet']['title'],
+                    "description": item['snippet']['description'],
+                    "id": video_id,
+                    "link": link
+                    }
+            videos.append(video)
+        if 'nextPageToken' in data and data['nextPageToken']:
+            more_videos = self.search_videos(
+                    channel_id, published_after, data['nextPageToken'])
+            if more_videos:
+                videos += more_videos
+        return videos
+
     def __get_videos_from_playlist(self, playlist_id, next_page_token=None):
         videos = []
         url = (f"{URL}/playlistItems?part=snippet&maxResults=50&"
@@ -47,7 +114,7 @@ class YT:
             for item in data['items']:
                 if item['snippet']['title'].lower() == 'private video' or \
                         item['snippet']['title'].lower() == 'deleted video':
-                            continue
+                    continue
                 video_id = item['snippet']['resourceId']['videoId']
                 download_link = f"{YTURL}/watch?v={video_id}"
                 link = f"{YTURL}/watch?v={video_id}&list={playlist_id}"
@@ -61,8 +128,8 @@ class YT:
                         }
                 videos.append(video)
             if 'nextPageToken' in data and data['nextPageToken']:
-                more_videos = self.__get_videos_from_playlist(playlist_id,
-                        data['nextPageToken'])
+                more_videos = self.__get_videos_from_playlist(
+                        playlist_id, data['nextPageToken'])
                 if more_videos:
                     videos += more_videos
         else:
@@ -75,9 +142,15 @@ if __name__ == "__main__":
     import os
     from dotenv import load_dotenv
     load_dotenv()
-    YOUTUBE_KEY = os.getenv("YOUTUBE_KEY")
+    YT_KEY = os.getenv("YT_KEY")
     LIST_ID = os.getenv("LIST_ID")
-    yt = YT(YOUTUBE_KEY)
+    yt = YT(YT_KEY)
+    print(yt.search_videos("UCP8dTCaLNJFxfklb_GNqe6A", "2022-04-20T00:00:00Z"))
+    exit(0)
+    video = yt.get_video("x-KyDmFBhng")
+    if video:
+        print(video)
+    exit(1)
     list_of_videos = yt.get_videos_from_playlist(LIST_ID)
     for avideo in list_of_videos:
         print(avideo)
